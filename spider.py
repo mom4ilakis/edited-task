@@ -4,8 +4,9 @@ import logging
 import os
 import uuid
 from logging.config import DictConfigurator
-from urllib.parse import urlparse
+from urllib.parse import urlparse, ParseResult
 from pathlib import Path
+from urllib.robotparser import RobotFileParser
 
 from playwright.async_api import async_playwright, Error
 
@@ -15,6 +16,18 @@ DictConfigurator(LOGGING_CONFIG)
 logger = logging.getLogger("spider")
 
 PAGE_TIMEOUT = os.environ.get("PAGE_TIMEOUT", 30000)  # default timeout of 30 seconds
+
+
+def create_robot(url):
+    parsed_url = urlparse(url)
+    site = f"{parsed_url.scheme}://{parsed_url.netloc}/robots.txt"
+    rp = RobotFileParser(site)
+    rp.read()
+    return rp
+
+
+def robot_can_read(rp: RobotFileParser, url, user_agent: str = "*"):
+    return rp.can_fetch(user_agent, url)
 
 
 async def take_screenshot(page, save_path: Path):
@@ -30,10 +43,15 @@ def verify_url(url: str):
 
 
 async def load_link(page, link):
-    return await page.goto(link, wait_until="load", timeout=PAGE_TIMEOUT)
+    await page.goto(link, wait_until="load", timeout=PAGE_TIMEOUT)
 
 
 async def crawl(target_url: str, links_to_follow: int, db_id: uuid.UUID, output_folder: Path):
+    rp = create_robot(target_url)
+    if not robot_can_read(rp, target_url):
+        logger.warning(f"ROBOTS.txt disallows scraping of {target_url}")
+        return
+
     output_folder = output_folder / f"{db_id}"
 
     output_folder.mkdir(parents=True, exist_ok=True)
@@ -49,6 +67,11 @@ async def crawl(target_url: str, links_to_follow: int, db_id: uuid.UUID, output_
             logger.info(f"Found {len(links)}/{links_to_follow} links")
             for i, link in enumerate(links, start=1):
                 await load_link(page, link)
+
+                if not robot_can_read(rp, link):
+                    logger.warning(f"ROBOTS.txt disallows scraping of {target_url}")
+                    continue
+
                 await take_screenshot(page, output_folder / f"{i}.png")
         except Error as e:
             logger.error(e)
@@ -58,7 +81,6 @@ async def crawl(target_url: str, links_to_follow: int, db_id: uuid.UUID, output_
 
 
 def main(target_url: str, links_to_follow: int, db_id: uuid.UUID, output_folder: Path):
-
     verify_url(url)
     asyncio.run(crawl(target_url, links_to_follow, db_id, output_folder))
 
