@@ -26,9 +26,9 @@ LOGGING_CONFIG = {
             "level": "INFO",
             "propagate": False
         },
-        "app": {
+        "server": {
             "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False
         },
     },

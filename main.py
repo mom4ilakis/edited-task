@@ -1,11 +1,9 @@
 import logging
-from logging.config import DictConfigurator
-import os
+from logging.config import dictConfig
 import uuid
-from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, Request, Response, HTTPException
+from fastapi import FastAPI, BackgroundTasks, Response, HTTPException
 
 from constants import SCREENSHOTS_FOLDER
 from dtos import IdResponse, StartCrawRequest
@@ -14,17 +12,9 @@ from models import ProcesStatus
 from services import crawl_page, create_zip
 from dependencies import CrawlerServiceDep
 
-DictConfigurator(LOGGING_CONFIG)
+dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger("server")
 app = FastAPI()
-
-
-
-@app.middleware("http")
-async def log_request(request: Request, call_next):
-    logger.info(f"{request.method} {request.url}")
-    return await call_next(request)
-
 
 @app.get("/isalive")
 async def is_alive():
