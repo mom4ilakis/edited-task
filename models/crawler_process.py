@@ -18,6 +18,6 @@ class CrawlerProcess(SQLModel, table=True):
     uuid: _uuid.UUID = Field(default_factory=_uuid.uuid4)
     url: str = Field()
     links_to_follow: int = Field(gt=0)
-    status: int = Field(default=ProcesStatus.QUEUED.value)
+    status: ProcesStatus = Field(default=ProcesStatus.QUEUED.value)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
