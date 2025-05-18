@@ -1,3 +1,4 @@
+import logging
 import os
 
 from sqlmodel import SQLModel, create_engine, Session
@@ -9,6 +10,8 @@ from models import CrawlerProcess
 DB_FILE_FOLDER.mkdir(parents=True, exist_ok=True)
 
 sqlite_file_name = DB_FILE_FOLDER / "database.db"
+
+
 
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
@@ -25,6 +28,8 @@ def create_db_and_tables():
 
 
 def main():
+    logger = logging.getLogger("db")
+    logger.info("Syncing DB and models!")
     create_db_and_tables()
 
 
