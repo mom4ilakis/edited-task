@@ -4,3 +4,5 @@
 
 /screenshots/
 /db/
+/app.log
+**/__pycache__/
