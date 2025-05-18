@@ -26,7 +26,7 @@ async def craw(target_url: str, links_to_follow: int, db_id: uuid.UUID, output_f
         page = await browser.new_page()
         try:
             await page.goto(target_url, wait_until="load")
-            await take_screenshot(page, output_folder / "0.png")
+            await take_screenshot(page, output_folder / "start.png")
             links = await page.eval_on_selector_all("a",
                                                     f"elements => elements.slice(0,{links_to_follow}).map(e=>e.href)")
             for i, link in enumerate(links, start=1):
