@@ -1,1 +1,1 @@
-from .crawler_process import CrawlerProcess
+from .crawler_process import CrawlerProcess, ProcesStatus
